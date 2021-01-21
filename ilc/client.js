@@ -40,6 +40,7 @@ const asyncBootUp = new AsyncBootUp();
 if (!registryConf.settings.amdDefineCompatibilityMode) {
     window.define = window.ILC.define;
 }
+
 window.ILC.getAppSdkAdapter = appId => ({
     appId,
     intl: i18n ? i18n.getAdapter() : null

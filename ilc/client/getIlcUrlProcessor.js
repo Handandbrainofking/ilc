@@ -1,4 +1,4 @@
-const getIlcConfig = require('./ilcConfig').default;
+const getIlcConfig = require('./ilcConfig');
 const UrlProcessor = require('../common/UrlProcessor');
 
 let urlProcessor;
@@ -10,4 +10,4 @@ module.exports = () => {
     }
 
     return urlProcessor;
-}
+};

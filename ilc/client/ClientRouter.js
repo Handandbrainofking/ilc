@@ -1,7 +1,8 @@
 import deepmerge from 'deepmerge';
 
-import * as Router from '../common/router/Router';
 import * as errors from '../common/router/errors';
+
+const getIlcRouter = require('./getIlcRouter');
 
 export default class ClientRouter {
     errors = errors;
@@ -32,7 +33,7 @@ export default class ClientRouter {
         this.#logger = logger;
         this.#unlocalizeUrl = unlocalizeUrl;
         this.#registryConf = registryConf;
-        this.#router = new Router(registryConf);
+        this.#router = getIlcRouter();
         this.#currentUrl = this.#getCurrUrl();
 
         this.#setInitialRoutes(state);
@@ -152,7 +153,7 @@ export default class ClientRouter {
             ctrlKey, // control / ctrl - opens context menu. it works in spite of preventing default behaviour (Chrome@87 / Safari@14 / Firefox@83), but it's good to ignore ILC handling in this case too
             shiftKey, // shift - opens new window (Chrome@87 / Firefox@83), add to "read latter"(Safari@14)
         } = event;
-        
+
         if (metaKey || altKey || ctrlKey || shiftKey) {
             return;
         }

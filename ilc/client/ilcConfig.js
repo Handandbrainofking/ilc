@@ -1,6 +1,6 @@
 let registryConf = null;
 
-export default function () {
+module.exports = () => {
     if (registryConf !== null) {
         return registryConf;
     }
@@ -15,8 +15,7 @@ export default function () {
     document.head.appendChild(getSystemjsImportmap(registryConf.apps));
 
     return registryConf;
-}
-
+};
 
 function getSystemjsImportmap(apps) {
     const res = {};
