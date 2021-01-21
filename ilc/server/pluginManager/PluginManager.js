@@ -6,6 +6,7 @@ const fg = require('fast-glob');
 const TYPES = {
     reporting: 'reporting',
     i18nParamsDetection: 'i18nParamsDetection',
+    transitionHooks: 'transitionHooks',
 };
 
 module.exports = class PluginManager {
@@ -21,6 +22,10 @@ module.exports = class PluginManager {
 
     getI18nParamsDetectionPlugin() {
         return this.#plugins[TYPES.i18nParamsDetection] || null;
+    }
+
+    getTransitionHooksPlugin() {
+        return this.#plugins[TYPES.transitionHooks] || null;
     }
 
     //TODO: here we should be using common logger, however for it to work properly we need PluginManager...
@@ -53,5 +58,15 @@ module.exports = class PluginManager {
             console.info(`Enabling plugin "${manifest.name}" of type "${pSource.type}"...`);
             this.#plugins[pSource.type] = pSource;
         }
+
+        this.#plugins[TYPES.transitionHooks] = {
+            getTransitionHooks: () => [
+                async ({route,req}) => {return {type: 'continue'};},
+                async ({route,req}) => {return {type: 'continue'};},
+                async ({route,req}) => {return {type: 'continue'};},
+                async ({route,req}) => {return !route.meta.protected ? {type: 'continue'} : {type: 'redirect', newLocation: '/planets'};},
+                // async ({route,req}) => {throw new Error('Should redirect to 500 page error');},
+            ],
+        };
     }
 };

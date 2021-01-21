@@ -4,7 +4,9 @@ const tailorFactory = require('./tailor/factory');
 const serveStatic = require('./serveStatic');
 const errorHandlingService = require('./errorHandler/factory');
 const i18n = require('./i18n');
+const guard = require('./guard');
 const UrlProcessor = require('../common/UrlProcessor');
+const unlocalizeUrl = require('../common/i18n/unlocalizeUrl');
 
 /**
  * @param {Registry} registryService
@@ -15,6 +17,7 @@ module.exports = (registryService, pluginManager) => {
     }, require('./logger/fastify')));
 
     const i18nParamsDetectionPlugin = pluginManager.getI18nParamsDetectionPlugin();
+    const transitionHooksPlugin = pluginManager.getTransitionHooksPlugin();
 
     app.addHook('onRequest', async (req, reply) => {
         req.raw.ilcState = {};
@@ -23,6 +26,15 @@ module.exports = (registryService, pluginManager) => {
 
         await i18nOnRequest(req, reply);
     });
+
+    if (transitionHooksPlugin !== null) {
+        app.addHook('preHandler', async (req, reply) => {
+            const registryConfig = await registryService.getConfig();
+            const guardPreHandler = await guard.preHandlerFactory(registryConfig.data, unlocalizeUrl, transitionHooksPlugin);
+
+            await guardPreHandler(req, reply);
+        });
+    }
 
     const tailor = tailorFactory(
         registryService,
