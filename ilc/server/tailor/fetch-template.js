@@ -3,7 +3,7 @@
 const mergeConfigs = require('./merge-configs');
 const parseOverrideConfig = require('./parse-override-config');
 const config = require('config');
-const {unlocalizeUrl} = require('../i18n');
+const unlocalizeUrl = require('../../common/i18n/unlocalizeUrl');
 
 const TEMPLATE_ERROR = 0;
 const TEMPLATE_NOT_FOUND = 1;
