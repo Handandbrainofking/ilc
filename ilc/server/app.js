@@ -6,7 +6,6 @@ const errorHandlingService = require('./errorHandler/factory');
 const i18n = require('./i18n');
 const guard = require('./guard');
 const UrlProcessor = require('../common/UrlProcessor');
-const unlocalizeUrl = require('../common/i18n/unlocalizeUrl');
 
 /**
  * @param {Registry} registryService
@@ -30,7 +29,7 @@ module.exports = (registryService, pluginManager) => {
     if (transitionHooksPlugin !== null) {
         app.addHook('preHandler', async (req, reply) => {
             const registryConfig = await registryService.getConfig();
-            const guardPreHandler = await guard.preHandlerFactory(registryConfig.data, unlocalizeUrl, transitionHooksPlugin);
+            const guardPreHandler = await guard.preHandlerFactory(registryConfig.data, i18n.unlocalizeUrl, transitionHooksPlugin);
 
             await guardPreHandler(req, reply);
         });

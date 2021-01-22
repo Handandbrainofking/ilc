@@ -1,4 +1,4 @@
-import './client/navigationEvents/setupEvents';
+import setupNavigationHook from './client/navigationEvents/setupEvents';
 import * as singleSpa from 'single-spa';
 
 import Router from './client/ClientRouter';
@@ -14,7 +14,10 @@ import AsyncBootUp from './client/AsyncBootUp';
 import IlcAppSdk from 'ilc-sdk/app';
 import I18n from './client/i18n';
 import {makeAppId} from './common/utils';
+import UrlProcessor from './common/UrlProcessor';
 import {triggerAppChange} from './client/navigationEvents';
+import GuardManager from './client/GuardManager';
+import transitionHooksPlugin from './client/transitionHooksPlugin';
 
 const System = window.System;
 if (System === undefined) {
@@ -33,7 +36,16 @@ const i18n = registryConf.settings.i18n.enabled
     ? new I18n(registryConf.settings.i18n, {...singleSpa, triggerAppChange}, appErrorHandlerFactory)
     : null;
 const router = new Router(registryConf, state, i18n ? i18n.unlocalizeUrl : undefined, singleSpa);
+const guardManager = transitionHooksPlugin
+    ? new GuardManager(router, transitionHooksPlugin)
+    : null;
+const urlProcessor = new UrlProcessor(registryConf.settings.trailingSlash);
 const asyncBootUp = new AsyncBootUp();
+
+setupNavigationHook((url) => ({
+    navigationShouldBeCanceled: url && guardManager ? !guardManager.hasAccessTo(url) : false,
+    newUrl: url ? urlProcessor.process(url) : url,
+}));
 
 // Here we expose window.ILC.define also as window.define to ensure that regular AMD/UMD bundles work correctly by default
 // See docs/umd_bundles_compatibility.md

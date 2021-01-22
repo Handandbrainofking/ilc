@@ -2,7 +2,7 @@ const Cookie = require('cookie');
 const Intl = require('ilc-sdk/app').Intl;
 const {intlSchema} = require('ilc-sdk/dist/server/IlcProtocol'); // "Private" import
 
-const cookieEncoder = require('../common/i18n/i18nCookie');
+const cookieEncoder = require('../common/i18nCookie');
 
 const onRequestFactory = (i18nConfig, i18nParamsDetectionPlugin) => async (req, reply) => {
     if (!i18nConfig.enabled || req.raw.url === '/ping' || req.raw.url.startsWith('/_ilc/')) {
@@ -57,8 +57,22 @@ const onRequestFactory = (i18nConfig, i18nParamsDetectionPlugin) => async (req, 
             cookieEncoder.getOpts()
         ));
     }
+};
+
+/**
+ * @param i18nConfig
+ * @param {string} url
+ * @return {string}
+ */
+function unlocalizeUrl(i18nConfig, url) {
+    if (!i18nConfig.enabled) {
+        return url;
+    }
+
+    return Intl.parseUrl(i18nConfig, url).cleanUrl;
 }
 
 module.exports = {
     onRequestFactory,
+    unlocalizeUrl,
 };

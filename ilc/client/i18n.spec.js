@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import I18n from './i18n';
 import Cookies from 'js-cookie';
-import i18nCookie from "../common/i18n/i18nCookie";
+import i18nCookie from "../common/i18nCookie";
 
 describe('I18n', () => {
     const intlChangeEvent = sinon.spy();

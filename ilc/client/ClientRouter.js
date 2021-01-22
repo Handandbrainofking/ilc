@@ -1,8 +1,7 @@
 import deepmerge from 'deepmerge';
 
+import Router from '../common/router/Router';
 import * as errors from '../common/router/errors';
-
-const getIlcRouter = require('./getIlcRouter');
 
 export default class ClientRouter {
     errors = errors;
@@ -33,7 +32,7 @@ export default class ClientRouter {
         this.#logger = logger;
         this.#unlocalizeUrl = unlocalizeUrl;
         this.#registryConf = registryConf;
-        this.#router = getIlcRouter();
+        this.#router = new Router(registryConf);
         this.#currentUrl = this.#getCurrUrl();
 
         this.#setInitialRoutes(state);
@@ -45,6 +44,9 @@ export default class ClientRouter {
 
     getPrevRouteProps = (appName, slotName) => this.#getRouteProps(appName, slotName, this.#prevRoute);
     getCurrentRouteProps = (appName, slotName) => this.#getRouteProps(appName, slotName, this.#currentRoute);
+
+    match = (url) => this.#router.match(this.#unlocalizeUrl(url.replace(this.#location.origin, '') || '/'));
+    navigateToUrl = (url) => this.#singleSpa.navigateToUrl(url);
 
     #getRouteProps(appName, slotName, route) {
         if (this.#registryConf.apps[appName] === undefined) {
@@ -167,11 +169,10 @@ export default class ClientRouter {
             return;
         }
 
-        const pathname = href.replace(this.#location.origin, '') || '/';
-        const {specialRole} = this.#router.match(this.#unlocalizeUrl(pathname));
+        const {specialRole} = this.match(href);
 
         if (specialRole === null) {
-            this.#singleSpa.navigateToUrl(href);
+            this.navigateToUrl(href);
             event.preventDefault();
         }
     };

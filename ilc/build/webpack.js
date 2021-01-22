@@ -35,11 +35,6 @@ module.exports = {
             header: () => fs.readFileSync(path.resolve(__dirname, '../public/system.js')),
             afterOptimizations: true,
         }),
-        new WrapperPlugin({
-            test: /\.js$/,
-            header: () => fs.readFileSync(path.resolve(__dirname, '../public/patchEvents.js')),
-            afterOptimizations: true,
-        }),
     ],
     devtool: 'source-map',
     externals: [],

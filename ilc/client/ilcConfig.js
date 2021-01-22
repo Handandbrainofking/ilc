@@ -1,6 +1,6 @@
 let registryConf = null;
 
-module.exports = () => {
+export default function () {
     if (registryConf !== null) {
         return registryConf;
     }
