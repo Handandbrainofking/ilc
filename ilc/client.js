@@ -15,9 +15,9 @@ import IlcAppSdk from 'ilc-sdk/app';
 import I18n from './client/i18n';
 import {makeAppId} from './common/utils';
 import UrlProcessor from './common/UrlProcessor';
+import PluginManager from './common/PluginManager';
 import {triggerAppChange} from './client/navigationEvents';
 import GuardManager from './client/GuardManager';
-import transitionHooksPlugin from './client/transitionHooksPlugin';
 
 const System = window.System;
 if (System === undefined) {
@@ -32,18 +32,17 @@ const appErrorHandlerFactory = (appName, slotName) => {
     return fragmentErrorHandlerFactory(registryConf, router.getCurrentRoute, appName, slotName);
 };
 
+const pluginManager = new PluginManager(require.context('./node_modules', true, /ilc-plugin-.*\/dist\/browser\.js$/));
 const i18n = registryConf.settings.i18n.enabled
     ? new I18n(registryConf.settings.i18n, {...singleSpa, triggerAppChange}, appErrorHandlerFactory)
     : null;
 const router = new Router(registryConf, state, i18n ? i18n.unlocalizeUrl : undefined, singleSpa);
-const guardManager = transitionHooksPlugin
-    ? new GuardManager(router, transitionHooksPlugin)
-    : null;
+const guardManager = new GuardManager(router, pluginManager);
 const urlProcessor = new UrlProcessor(registryConf.settings.trailingSlash);
 const asyncBootUp = new AsyncBootUp();
 
 setupNavigationHook((url) => ({
-    navigationShouldBeCanceled: url && guardManager ? !guardManager.hasAccessTo(url) : false,
+    navigationShouldBeCanceled: url ? !guardManager.hasAccessTo(url) : false,
     newUrl: url ? urlProcessor.process(url) : url,
 }));
 

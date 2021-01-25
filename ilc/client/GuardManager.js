@@ -4,12 +4,16 @@ export default class GuardManager {
     #router;
     #transitionHooksPlugin;
 
-    constructor(router, transitionHooksPlugin) {
+    constructor(router, pluginManager) {
         this.#router = router;
-        this.#transitionHooksPlugin = transitionHooksPlugin;
+        this.#transitionHooksPlugin = pluginManager.getTransitionHooksPlugin();
     }
 
     hasAccessTo(url) {
+        if (this.#transitionHooksPlugin === null) {
+            return true;
+        }
+
         const route = this.#router.match(url);
 
         if (route.specialRole === null) {
