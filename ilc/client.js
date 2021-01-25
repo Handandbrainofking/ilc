@@ -1,4 +1,4 @@
-import setupNavigationHook from './client/navigationEvents/setupEvents';
+import addNavigationHook from './client/navigationEvents/setupEvents';
 import * as singleSpa from 'single-spa';
 
 import Router from './client/ClientRouter';
@@ -41,10 +41,14 @@ const guardManager = new GuardManager(router, pluginManager);
 const urlProcessor = new UrlProcessor(registryConf.settings.trailingSlash);
 const asyncBootUp = new AsyncBootUp();
 
-setupNavigationHook((url) => ({
-    navigationShouldBeCanceled: url ? !guardManager.hasAccessTo(url) : false,
-    newUrl: url ? urlProcessor.process(url) : url,
-}));
+addNavigationHook((url) => {
+    if (url) {
+        return {
+            navigationShouldBeCanceled: !guardManager.hasAccessTo(url),
+            nextUrl: urlProcessor.process(url),
+        };
+    }
+});
 
 // Here we expose window.ILC.define also as window.define to ensure that regular AMD/UMD bundles work correctly by default
 // See docs/umd_bundles_compatibility.md

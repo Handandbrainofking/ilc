@@ -1,5 +1,5 @@
-let navigationHook;
-let currentUrl = window.location.href;
+let hooks = [];
+let currUrl = window.location.href;
 
 const capturedEventListeners = {
     hashchange: [],
@@ -19,9 +19,9 @@ function callCapturedEventListeners(eventArguments) {
         return;
     }
 
-    const eventType = eventArguments[0].type;
+    const eventName = eventArguments[0].type;
 
-    if (!(routingEventsListeningTo.indexOf(eventType) >= 0)) {
+    if (!routingEventsListeningTo.includes(eventName)) {
         return;
     }
 
@@ -38,7 +38,7 @@ function callCapturedEventListeners(eventArguments) {
 
 function patchedAddEventListener(eventName, fn) {
     if (
-        typeof fn === "function" &&
+        typeof fn === 'function' &&
         routingEventsListeningTo.includes(eventName) &&
         !capturedEventListeners[eventName].includes(fn)
     ) {
@@ -50,7 +50,7 @@ function patchedAddEventListener(eventName, fn) {
 }
 
 function patchedRemoveEventListener(eventName, fn) {
-    if (typeof fn === "function" && routingEventsListeningTo.includes(eventName)) {
+    if (typeof fn === 'function' && routingEventsListeningTo.includes(eventName)) {
         capturedEventListeners[eventName] = capturedEventListeners[eventName].filter((listener) => listener !== fn);
         return;
     }
@@ -62,26 +62,50 @@ function fireRoutingEvent() {
     window.dispatchEvent(new CustomEvent('ilc:before-routing'));
 }
 
-function setupNavigationHook(hook) {
-    navigationHook = hook;
+function addNavigationHook(fn) {
+    if (typeof fn !== 'function') {
+        throw new Error(`Provided hook "${fn}" is not a function! Please check that you provided a function while calling "addNavigationHook()".`);
+    }
+
+    if (hooks.includes(fn)) {
+        console.warn(`Provided hook "${fn}" is already existed! Please provide only a unique hook to "addNavigationHook()".`);
+        return;
+    }
+
+    hooks.push(fn);
+}
+
+function callNavigationHooks(url) {
+    return hooks.reduce((prevResult, hook) => {
+        const currResult = hook(url);
+
+        if (typeof currResult !== 'object') {
+            return prevResult;
+        }
+
+        return Object.assign({}, prevResult, currResult);
+    }, {
+        navigationShouldBeCanceled: false,
+        nextUrl: url,
+    });
 }
 
 function patchedUpdateState(updateState) {
     return function (state, title, url, ...rest) {
         const {
             navigationShouldBeCanceled,
-            newUrl,
-        } = navigationHook(url);
+            nextUrl,
+        } = callNavigationHooks(url);
 
         if (navigationShouldBeCanceled) {
             return;
         }
 
-        const urlBefore = window.location.href;
-        const result = updateState.call(this, state, title, newUrl, ...rest);
-        const urlAfter = window.location.href;
+        const oldUrl = window.location.href;
+        const result = updateState.call(this, state, title, nextUrl, ...rest);
+        const newUrl = window.location.href;
 
-        if (urlBefore !== urlAfter) {
+        if (oldUrl !== newUrl) {
             fireRoutingEvent();
         }
 
@@ -90,11 +114,11 @@ function patchedUpdateState(updateState) {
 }
 
 function handlePopState(event) {
-    const oldUrl = currentUrl;
-    const newUrl = (currentUrl = window.location.href);
+    const prevUrl = currUrl;
+    const nextUrl = (currUrl = window.location.href);
 
-    if (!event.singleSpa && navigationHook(newUrl).navigationShouldBeCanceled) {
-        window.history.replaceState(null, undefined, oldUrl);
+    if (!event.singleSpa && callNavigationHooks(nextUrl).navigationShouldBeCanceled) {
+        window.history.replaceState(null, undefined, prevUrl);
         return;
     }
 
@@ -114,4 +138,4 @@ window.addEventListener('popstate', fireRoutingEvent);
 window.history.pushState = patchedUpdateState(window.history.pushState);
 window.history.replaceState = patchedUpdateState(window.history.replaceState);
 
-export default setupNavigationHook;
+export default addNavigationHook;
