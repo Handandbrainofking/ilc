@@ -85,12 +85,8 @@ describe('guard manager', () => {
 
             chai.expect(guardManager.hasAccessTo(url)).to.be.false;
 
-            for (const hook of [hooks[0], hooks[1]]) {
+            for (const hook of hooks) {
                 chai.expect(hook.calledOnceWith({route: {...route, url}, navigate: router.navigateToUrl})).to.be.true;
-            }
-
-            for (const hook of [hooks[2], hooks[3]]) {
-                chai.expect(hook.called).to.be.false;
             }
         });
     });

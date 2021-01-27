@@ -76,18 +76,22 @@ function addNavigationHook(fn) {
 }
 
 function callNavigationHooks(url) {
-    return hooks.reduce((prevResult, hook) => {
-        const currResult = hook(url);
-
-        if (typeof currResult !== 'object') {
-            return prevResult;
-        }
-
-        return Object.assign({}, prevResult, currResult);
-    }, {
+    let state = {
         navigationShouldBeCanceled: false,
         nextUrl: url,
-    });
+    };
+
+    for (const hook of hooks) {
+        const nextState = hook(state);
+
+        if (typeof nextState !== 'object') {
+            continue;
+        }
+
+        state = Object.assign({}, state, nextState);
+    }
+
+    return state;
 }
 
 function patchedUpdateState(updateState) {

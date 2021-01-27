@@ -41,9 +41,10 @@ const guardManager = new GuardManager(router, pluginManager);
 const urlProcessor = new UrlProcessor(registryConf.settings.trailingSlash);
 const asyncBootUp = new AsyncBootUp();
 
-addNavigationHook((url) => {
-    if (url) {
+addNavigationHook((state) => {
+    if (state.nextUrl) {
         return {
+            ...state,
             navigationShouldBeCanceled: !guardManager.hasAccessTo(url),
             nextUrl: urlProcessor.process(url),
         };

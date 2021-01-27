@@ -10,8 +10,10 @@ export default class GuardManager {
     }
 
     hasAccessTo(url) {
+        let hasAccess = true;
+
         if (this.#transitionHooksPlugin === null) {
-            return true;
+            return hasAccess;
         }
 
         const route = this.#router.match(url);
@@ -23,14 +25,12 @@ export default class GuardManager {
                     navigate: this.#router.navigateToUrl,
                 });
 
-                switch(action.type) {
-                    case actionTypes.stopNavigation: return false;
-                    case actionTypes.continue:
-                    default: break;
+                if (hasAccess && action.type === actionTypes.stopNavigation) {
+                    hasAccess = false;
                 }
             }
         }
 
-        return true;
+        return hasAccess;
     }
 };
