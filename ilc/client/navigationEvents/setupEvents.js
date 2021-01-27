@@ -62,7 +62,7 @@ function fireRoutingEvent() {
     window.dispatchEvent(new CustomEvent('ilc:before-routing'));
 }
 
-function addNavigationHook(fn) {
+export function addNavigationHook(fn) {
     if (typeof fn !== 'function') {
         throw new Error(`Provided hook "${fn}" is not a function! Please check that you provided a function while calling "addNavigationHook()".`);
     }
@@ -73,6 +73,12 @@ function addNavigationHook(fn) {
     }
 
     hooks.push(fn);
+}
+
+export function removeNavigationHook(fn) {
+    if (typeof fn === 'function' && hooks.includes(fn)) {
+        hooks = hooks.filter((hook) => hook !== fn);
+    }
 }
 
 function callNavigationHooks(url) {
@@ -141,5 +147,3 @@ window.addEventListener('popstate', fireRoutingEvent);
 
 window.history.pushState = patchedUpdateState(window.history.pushState);
 window.history.replaceState = patchedUpdateState(window.history.replaceState);
-
-export default addNavigationHook;

@@ -1,4 +1,4 @@
-import addNavigationHook from './client/navigationEvents/setupEvents';
+import {addNavigationHook} from './client/navigationEvents/setupEvents';
 import * as singleSpa from 'single-spa';
 
 import Router from './client/ClientRouter';
