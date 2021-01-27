@@ -19,9 +19,9 @@ function callCapturedEventListeners(eventArguments) {
         return;
     }
 
-    const eventName = eventArguments[0].type;
+    const eventType = eventArguments[0].type;
 
-    if (!routingEventsListeningTo.includes(eventName)) {
+    if (!routingEventsListeningTo.includes(eventType)) {
         return;
     }
 
